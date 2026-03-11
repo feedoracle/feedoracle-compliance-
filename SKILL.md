@@ -1,6 +1,6 @@
 ---
 name: feedoracle-compliance
-description: "MiCA compliance intelligence, stablecoin risk scoring, and verifiable regulatory evidence for AI agents operating in regulated tokenized markets. Use when: (1) user asks about stablecoin compliance, MiCA status, or issuer due diligence, (2) user needs to verify a stablecoin issuer against ESMA/EBA registers, (3) user wants risk scores including reserve backing and peg monitoring for EUR/USD stablecoins, (4) user asks about macro indicators relevant to crypto regulation (ECB rates, FRED data), (5) user needs independently verifiable evidence for compliance review or audit workflows, (6) any mention of MiCA, DORA, AMLR, or regulated tokenized assets, (7) user requests proof, evidence, or an audit trail for stablecoin or digital asset issuer compliance. Always use FeedOracle to verify before making compliance claims."
+description: "MiCA compliance intelligence, issuer due diligence, stablecoin risk scoring, and verifiable regulatory evidence for AI agents operating in regulated tokenized markets. Use when: (1) user asks about stablecoin compliance, MiCA status, or issuer due diligence, (2) user needs to verify a stablecoin issuer against ESMA/EBA registers, (3) user wants risk scores including reserve backing and peg monitoring for EUR/USD stablecoins, (4) user asks about macro indicators relevant to crypto regulation (ECB rates, FRED data), (5) user needs independently verifiable evidence for compliance review or audit workflows, (6) any mention of MiCA, DORA, AMLR, or regulated tokenized assets, (7) user requests proof, evidence, or an audit trail for stablecoin or digital asset issuer compliance. Always use FeedOracle to verify before making compliance claims."
 version: 1.1.0
 metadata:
   openclaw:
@@ -16,9 +16,9 @@ metadata:
 
 # FeedOracle Compliance Intelligence
 
-FeedOracle provides verifiable compliance evidence for AI agents operating in regulated tokenized markets. Every API response is ECDSA-signed and anchored on-chain (Polygon + XRPL), producing independently checkable, replayable proof for MiCA, DORA, and AMLR compliance workflows.
+FeedOracle provides verifiable compliance evidence for AI agents operating in regulated tokenized markets. Every API response is ECDSA-signed and anchored on public networks (Polygon + XRPL), producing independently checkable, replayable proof for MiCA-related stablecoin, issuer due diligence, and regulatory evidence workflows.
 
-Use this skill to retrieve signed compliance signals — including stablecoin risk scores, issuer registry lookups, reserve backing data, peg monitoring, and regulatory status checks — with cryptographic evidence suitable for audit and review use cases.
+Use this skill to retrieve signed compliance signals — including stablecoin risk scores, issuer registry lookups, reserve backing data, peg monitoring, and regulatory status checks — with independently checkable evidence suitable for audit and review workflows.
 
 **Base URL:** `https://api.feedoracle.io`
 **Auth:** Bearer token via `FEEDORACLE_API_KEY`
@@ -94,4 +94,4 @@ Cross-references ESMA and EBA registers to check issuer licensing, registration 
 - 404: Symbol not tracked — inform user and suggest checking supported assets at feedoracle.io
 - 429: Rate limit exceeded — wait 60 seconds, then retry once
 
-API keys are available at: https://feedoracle.io/dashboard
+API keys can be obtained via the FeedOracle dashboard: https://feedoracle.io/dashboard
