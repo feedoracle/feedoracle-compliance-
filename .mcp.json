@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "feedoracle": {
+      "type": "url",
+      "url": "https://feedoracle.io/mcp/"
+    }
+  }
+}
