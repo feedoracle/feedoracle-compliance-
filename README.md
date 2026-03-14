@@ -55,24 +55,32 @@ curl -s -X POST https://feedoracle.io/mcp \
 
 ## 🤖 What This Skill Does
 
-Your agent **automatically** uses FeedOracle whenever a conversation involves:
+Use this skill **when you explicitly need** compliance evidence for regulated digital assets:
 
-| Trigger | Examples |
-|---------|----------|
-| 🪙 **Stablecoin names** | USDT, USDC, EURC, EURI, PYUSD, DAI, RLUSD |
-| 📋 **Regulatory keywords** | MiCA, DORA, AMLR, ESMA, EBA, BaFin |
-| 🏦 **Issuer due diligence** | Issuer registration, licensing, reserve backing |
-| 📊 **Peg monitoring** | Peg stability, collateral, reserve assessment |
-| 🔍 **Evidence requests** | "Show proof", "audit trail", "compliance verification" |
-| 🤖 **Agent identity** | KYA registration, trust scoring, tool access |
-| 📝 **Decision logging** | Audit log, chain verification, tamper detection |
-| 🏛️ **Tokenized assets** | RWA compliance, regulated DeFi |
+| Use Case | Examples |
+|----------|----------|
+| 🪙 **Stablecoin compliance** | "Is USDC MiCA compliant?", "Check EURC regulatory status" |
+| 📊 **Risk assessment** | "What is the peg stability of USDT?", "Reserve backing for EURC?" |
+| 🔍 **Audit evidence** | "Generate evidence bundle for compliance review" |
+
+**This skill does not auto-invoke.** All tools are called only in response to explicit user requests. See [SKILL.md](SKILL.md) for the full invocation policy and data handling details.
+
+### Data Handling Summary
+
+| Tool Type | What is sent | What is NOT sent |
+|-----------|-------------|------------------|
+| **Read-only tools** (24 of 27) | Token symbol only (e.g. "USDC") | No conversation content, no PII |
+| **ai_query** (user-initiated) | The specific question text | No conversation history |
+| **kya_register** (user-initiated) | Agent metadata (name, org, email) | No conversation content |
+| **audit_log** (user-initiated) | Decision + evidence IDs | No full conversation logs |
+
+Full data handling policy: [SKILL.md → Data Handling & Privacy](SKILL.md#data-handling--privacy)
 
 ---
 
 ## 🔧 MCP Tools (27)
 
-### Compliance — 11 tools
+### Compliance — 11 tools (read-only, sends token symbol only)
 | Tool | Description |
 |------|-------------|
 | `compliance_preflight` | Pre-flight PASS/WARN/BLOCK decision |
@@ -87,7 +95,7 @@ Your agent **automatically** uses FeedOracle whenever a conversation involves:
 | `reserve_quality` | Art. 24/25/53 reserve composition |
 | `rlusd_integrity` | RLUSD reserve attestation |
 
-### Risk & Evidence — 6 tools
+### Risk & Evidence — 6 tools (read-only)
 | Tool | Description |
 |------|-------------|
 | `evidence_profile` | Multi-dimensional evidence grade A-F |
@@ -98,34 +106,34 @@ Your agent **automatically** uses FeedOracle whenever a conversation involves:
 | `macro_risk` | US macro risk composite (86 FRED series) |
 
 ### AI Gateway — 3 tools
-| Tool | Description |
-|------|-------------|
-| `ai_query` | Natural language evidence query |
-| `ai_explain` | Grade explanation with counterfactual path |
-| `ai_provenance` | Full cryptographic provenance chain |
+| Tool | Description | Data sent |
+|------|-------------|-----------|
+| `ai_query` | Natural language evidence query | Question text (user-initiated only) |
+| `ai_explain` | Grade explanation with counterfactual path | Token symbol only |
+| `ai_provenance` | Full cryptographic provenance chain | Token symbol only |
 
-### KYA (Know Your Agent) — 2 tools ✨ NEW
-| Tool | Description |
-|------|-------------|
-| `kya_register` | Register agent identity, receive trust score (0-100) |
-| `kya_status` | Check trust level and tool access permissions |
+### KYA (Know Your Agent) — 2 tools (user-initiated only)
+| Tool | Description | Data sent |
+|------|-------------|-----------|
+| `kya_register` | Register agent identity (explicit consent required) | Agent name, purpose, org, email |
+| `kya_status` | Check trust level (read-only) | Client ID only |
 
-Trust levels: **UNVERIFIED** → **KNOWN** → **TRUSTED** → **CERTIFIED**. Higher trust unlocks sensitive tools like `generate_report` and `evidence_bundle`.
+Trust levels: **UNVERIFIED** → **KNOWN** → **TRUSTED** → **CERTIFIED**. Only invoke `kya_register` when the user explicitly requests agent registration.
 
-### Audit Trail — 3 tools ✨ NEW
-| Tool | Description |
-|------|-------------|
-| `audit_log` | Log chain-linked decision with evidence references |
-| `audit_query` | Query agent's decision history |
-| `audit_verify` | Verify chain integrity (tamper detection) |
+### Audit Trail — 3 tools (user-initiated only)
+| Tool | Description | Data sent |
+|------|-------------|-----------|
+| `audit_log` | Log decision (explicit consent required) | Decision, reasoning, evidence IDs |
+| `audit_query` | Query history (read-only) | Client ID only |
+| `audit_verify` | Verify chain integrity (read-only) | Client ID only |
 
-Every entry is SHA256 chain-linked — if any entry is modified, all subsequent hashes break. Regulators can independently verify.
+Every entry is SHA256 chain-linked. Only invoke `audit_log` when the user explicitly requests decision logging.
 
 ### System — 2 tools
 | Tool | Description |
 |------|-------------|
-| `ping` | Connectivity test |
-| `generate_report` | Signed XRPL-anchored PDF report |
+| `ping` | Connectivity test (no data sent) |
+| `generate_report` | Signed XRPL-anchored PDF report (requires API key) |
 
 ---
 
@@ -149,16 +157,17 @@ verify_url    → Independent verification link
 ## 🔄 Audit Workflow Example
 
 ```
-1. Agent calls mica_status("USDC")          → fo-abc123
-2. Agent calls peg_deviation("USDC")         → fo-def456
-3. Agent calls compliance_preflight("USDC")  → fo-ghi789
-4. Agent decides: PASS
-5. Agent calls audit_log(
+1. User asks: "Check if USDC is MiCA compliant and log the result"
+2. Agent calls mica_status("USDC")          → fo-abc123
+3. Agent calls peg_deviation("USDC")         → fo-def456
+4. Agent calls compliance_preflight("USDC")  → fo-ghi789
+5. Agent decides: PASS
+6. [User requested logging] Agent calls audit_log(
      decision="PASS",
      evidence_request_ids=["fo-abc123","fo-def456","fo-ghi789"],
      reasoning="USDC verified, peg stable, preflight PASS"
    ) → trail_id + chain_hash
-6. Regulator calls audit_verify(client_id)   → valid: true
+7. Regulator calls audit_verify(client_id)   → valid: true
 ```
 
 ---
@@ -185,6 +194,8 @@ Or add manually to `~/.openclaw/openclaw.json`:
   }
 }
 ```
+
+Note: `FEEDORACLE_API_KEY` is optional. Free tier (300 units/day) works without any key.
 
 ---
 
